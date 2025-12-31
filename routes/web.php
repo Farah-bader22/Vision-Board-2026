@@ -4,17 +4,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GoalController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan; // أضفنا هذا السطر
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File; // أضفنا هذا السطر للتعامل مع الملفات
 use Inertia\Inertia;
 
-// الصفحة الرئيسية - تم التعديل هنا لإرسال الأهداف
+// الصفحة الرئيسية
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
-        // جلب آخر 3 أهداف للمستخدم إذا كان مسجلاً دخوله
         'goals' => auth()->check()
             ? auth()->user()->goals()->where('is_archived', false)->latest()->take(3)->get()
             : [],
@@ -23,28 +23,12 @@ Route::get('/', function () {
 
 // مسارات الداشبورد والأهداف - محمية بـ Middleware
 Route::middleware(['auth', 'verified'])->group(function () {
-
-    // 1. عرض الداشبورد (الأهداف النشطة)
     Route::get('/dashboard', [GoalController::class, 'index'])->name('dashboard');
-
-    // 2. إضافة هدف جديد
     Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
-
-    // 3. تحديث/تعديل هدف موجود
     Route::put('/goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
-
-    // 4. حذف هدف نهائياً
     Route::delete('/goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
-
-    // 5. صفحة الإحصائيات
     Route::get('/stats', [GoalController::class, 'stats'])->name('stats');
-
-    // --- ميزات الأرشفة الجديدة ---
-
-    // 6. صفحة الأرشيف (لعرض الأهداف المكتملة والمؤرشفة)
     Route::get('/archive', [GoalController::class, 'archiveIndex'])->name('archive');
-
-    // 7. تنفيذ عملية الأرشفة أو الاستعادة
     Route::patch('/goals/{goal}/archive', [GoalController::class, 'toggleArchive'])->name('goals.archive');
 });
 
@@ -56,15 +40,30 @@ Route::middleware('auth')->group(function () {
 });
 
 // ------------------------------------------------------------------
-// مسار الطوارئ لبناء قاعدة البيانات (لأن Shell في Render يحتاج اشتراك)
+// مسار الطوارئ المطور لإنشاء ملف SQLite وبناء الجداول
 // ------------------------------------------------------------------
 Route::get('/init-db', function () {
     try {
-        // سيقوم هذا الأمر بمسح أي جداول قديمة وبناء الجداول الجديدة فوراً
+        // تحديد مسار ملف قاعدة البيانات
+        $dbPath = database_path('database.sqlite');
+
+        // التأكد من وجود مجلد database
+        if (!File::isDirectory(database_path())) {
+            File::makeDirectory(database_path(), 0755, true);
+        }
+
+        // إنشاء الملف إذا لم يكن موجوداً
+        if (!File::exists($dbPath)) {
+            File::put($dbPath, '');
+            chmod($dbPath, 0777); // إعطاء صلاحيات كاملة للملف
+        }
+
+        // تنفيذ الميجريشن
         Artisan::call('migrate:fresh --force');
-        return "تم بناء قاعدة البيانات بنجاح وبشكل نظيف! جربي تسجيل الدخول الآن يا فرح.";
+
+        return "تم إنشاء ملف القاعدة وبناء الجداول بنجاح! جربي التسجيل الآن يا فرح.";
     } catch (\Exception $e) {
-        return "حدث خطأ أثناء بناء القاعدة: " . $e->getMessage();
+        return "حدث خطأ: " . $e->getMessage();
     }
 });
 
