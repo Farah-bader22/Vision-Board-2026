@@ -5,7 +5,7 @@ use App\Http\Controllers\GoalController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File; // أضفنا هذا السطر للتعامل مع الملفات
+use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
 
 // الصفحة الرئيسية
@@ -40,30 +40,28 @@ Route::middleware('auth')->group(function () {
 });
 
 // ------------------------------------------------------------------
-// مسار الطوارئ المطور لإنشاء ملف SQLite وبناء الجداول
+// مسار الطوارئ النهائي - استخدام المجلد المؤقت /tmp
 // ------------------------------------------------------------------
 Route::get('/init-db', function () {
     try {
-        // تحديد مسار ملف قاعدة البيانات
-        $dbPath = database_path('database.sqlite');
+        // نستخدم المجلد المؤقت لأن السيرفر يسمح بالكتابة فيه دائماً
+        $dbPath = '/tmp/database.sqlite';
 
-        // التأكد من وجود مجلد database
-        if (!File::isDirectory(database_path())) {
-            File::makeDirectory(database_path(), 0755, true);
-        }
-
-        // إنشاء الملف إذا لم يكن موجوداً
+        // إنشاء ملف قاعدة البيانات إذا لم يكن موجوداً
         if (!File::exists($dbPath)) {
             File::put($dbPath, '');
-            chmod($dbPath, 0777); // إعطاء صلاحيات كاملة للملف
+            chmod($dbPath, 0777);
         }
+
+        // إجبار Laravel على استخدام هذا المسار في اللحظة الحالية
+        config(['database.connections.sqlite.database' => $dbPath]);
 
         // تنفيذ الميجريشن
         Artisan::call('migrate:fresh --force');
 
-        return "تم إنشاء ملف القاعدة وبناء الجداول بنجاح! جربي التسجيل الآن يا فرح.";
+        return "تمت العملية بنجاح في المجلد المؤقت! جربي التسجيل الآن يا فرح.";
     } catch (\Exception $e) {
-        return "حدث خطأ: " . $e->getMessage();
+        return "حدث خطأ أثناء بناء القاعدة: " . $e->getMessage();
     }
 });
 
