@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GoalController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan; // أضفنا هذا السطر
 use Inertia\Inertia;
 
 // الصفحة الرئيسية - تم التعديل هنا لإرسال الأهداف
@@ -52,6 +53,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// ------------------------------------------------------------------
+// مسار الطوارئ لبناء قاعدة البيانات (لأن Shell في Render يحتاج اشتراك)
+// ------------------------------------------------------------------
+Route::get('/init-db', function () {
+    try {
+        // سيقوم هذا الأمر بمسح أي جداول قديمة وبناء الجداول الجديدة فوراً
+        Artisan::call('migrate:fresh --force');
+        return "تم بناء قاعدة البيانات بنجاح وبشكل نظيف! جربي تسجيل الدخول الآن يا فرح.";
+    } catch (\Exception $e) {
+        return "حدث خطأ أثناء بناء القاعدة: " . $e->getMessage();
+    }
 });
 
 require __DIR__.'/auth.php';
