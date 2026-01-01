@@ -1,5 +1,4 @@
 :root {
-   
     --bg-color: #050505;
     --primary-color: #8b5cf6;
     --card-bg: #111111;
@@ -7,7 +6,6 @@
     --text-muted: #71717a;
     --accent: #4ecdc4;
 }
-
 
 * {
     box-sizing: border-box;
@@ -20,9 +18,11 @@ html, body {
     margin: 0;
     padding: 0;
     width: 100%;
+    /* منع السكرول الجانبي المزعج في الموبايل */
     overflow-x: hidden;
+    /* تحسين جودة الخطوط */
+    -webkit-font-smoothing: antialiased;
 }
-
 
 .app-container {
     display: flex;
@@ -31,6 +31,7 @@ html, body {
     width: 100%;
 }
 
+/* تعديل الـ Nav ليكون مرناً */
 .main-nav {
     background: rgba(18, 18, 18, 0.8);
     backdrop-filter: blur(10px);
@@ -42,68 +43,72 @@ html, body {
     position: sticky;
     top: 0;
     z-index: 1000;
+    gap: 10px; /* مسافة بين اللوجو والروابط */
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 4vw, 1.5rem); /* حجم خط يتغير مع الشاشة */
     font-weight: 900;
     color: var(--primary-color);
     letter-spacing: -1px;
+    white-space: nowrap; /* منع اللوجو من النزول لسطر جديد */
+}
+
+/* التحكم في الروابط في الموبايل */
+.nav-links {
+    display: flex;
+    align-items: center;
 }
 
 .nav-links a {
     text-decoration: none;
     color: var(--text-muted);
-    margin-left: 1.5rem;
+    margin-left: clamp(0.5rem, 2vw, 1.5rem);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
     transition: 0.3s;
+    white-space: nowrap;
 }
 
-.nav-links a:hover {
-    color: var(--primary-color);
-}
-
-
+/* الصفحة الداخلية (Content) */
 .content {
-    padding: 2rem;
+    padding: clamp(1rem, 5vw, 2rem);
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
 }
 
+/* تعديل الـ Grid الخاص بالكروت ليكون مرناً */
+.goals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 1.5rem;
+}
 
 .file-upload-wrapper {
     background: #0a0a0a;
     border: 2px dashed #27272a;
-    padding: 30px;
+    padding: clamp(15px, 5vw, 30px);
     border-radius: 20px;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
+    width: 100%;
 }
-
-.file-upload-wrapper:hover {
-    border-color: var(--primary-color);
-    background: #111;
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
-}
-
-.custom-file-input {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.file-hint {
-    margin-top: 12px;
-    font-size: 0.8rem;
-    color: #52525b;
-}
-
 
 img {
     max-width: 100%;
     height: auto;
     display: block;
+    border-radius: inherit;
+}
+
+/* ميديا كويري خاصة للهواتف الصغيرة جداً */
+@media (max-width: 400px) {
+    .main-nav {
+        padding: 0.8rem 3%;
+    }
+    .nav-links a:not(.btn-main) {
+        display: none; /* إخفاء الروابط الثانوية لإبقاء الزر الرئيسي فقط */
+    }
 }

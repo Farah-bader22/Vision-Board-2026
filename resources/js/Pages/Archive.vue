@@ -7,6 +7,13 @@ const props = defineProps({
     archivedGoals: Array
 });
 
+// وظيفة لضمان الحصول على رابط الصورة الكامل لحل مشكلة السواد في الرندر
+const getImageUrl = (path) => {
+    if (!path) return '';
+    // نستخدم window.location.origin للتأكد من أن الرابط يبدأ بـ http/https
+    return `${window.location.origin}/storage/${path}`;
+};
+
 const unarchive = (id) => {
     router.patch(`/goals/${id}/archive`, {}, {
         onSuccess: () => {
@@ -41,9 +48,16 @@ const unarchive = (id) => {
                 <div v-for="goal in archivedGoals" :key="goal.id" class="v26-card archived">
                     <div class="v26-card-media">
                         <div class="status-badge">🏆 Completed</div>
+
+                        <div
+                            class="blur-bg"
+                            :style="{ backgroundImage: `url(${getImageUrl(goal.image_path)})` }"
+                        ></div>
+
                         <img
-                            :src="`/storage/${goal.image_path}`"
+                            :src="getImageUrl(goal.image_path)"
                             :alt="goal.title"
+                            crossorigin="anonymous"
                             class="v26-full-img"
                         >
                         <div class="image-overlay"></div>
@@ -56,7 +70,10 @@ const unarchive = (id) => {
                         </div>
                         <h3>{{ goal.title }}</h3>
                         <button @click="unarchive(goal.id)" class="v26-restore-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
                             Restore to Board
                         </button>
                     </div>
@@ -73,144 +90,152 @@ const unarchive = (id) => {
 </template>
 
 <style scoped>
-.v26-archive-container { padding: 30px 0; max-width: 1200px; margin: 0 auto; }
-.v26-archive-header { margin-bottom: 50px; text-align: left; }
+.v26-archive-container { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
+.v26-archive-header { margin-bottom: 50px; }
+
 .v26-label {
     background: linear-gradient(90deg, #8e2de2, #4ecdc4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 900;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
-.v26-archive-header h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; color: #fff; letter-spacing: -1px; }
-.v26-archive-header h1 span { color: #8e2de2; }
-.v26-archive-header p { color: #a1a1aa; margin-top: 10px; font-size: 1.1rem; }
 
+.v26-archive-header h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; color: #fff; letter-spacing: -2px; margin: 10px 0; }
+.v26-archive-header h1 span { color: #8e2de2; }
+.v26-archive-header p { color: #71717a; font-size: 1.1rem; }
+
+/* Grid System */
 .v26-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 35px;
 }
 
-
+/* Card Styling */
 .v26-card {
-    background: #111111;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 32px;
     overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
 }
 
 .v26-card:hover {
-    transform: translateY(-10px);
-    border-color: rgba(142, 45, 226, 0.4);
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.7), 0 18px 36px -18px rgba(142, 45, 226, 0.3);
+    transform: translateY(-12px);
+    border-color: rgba(142, 45, 226, 0.3);
+    box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.8);
 }
 
 .v26-card-media {
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     position: relative;
     overflow: hidden;
     background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blur-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px) brightness(0.4);
+    transform: scale(1.2);
+    z-index: 0;
 }
 
 .v26-full-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.8s ease, filter 0.8s ease;
-    filter: grayscale(60%) brightness(0.7);
+    position: relative;
+    z-index: 1;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    display: block; /* يمنع الفراغات الصغيرة أسفل الصورة */
 }
 
 .v26-card:hover .v26-full-img {
-    filter: grayscale(0%) brightness(1);
-    transform: scale(1.1);
-}
-
-.image-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, #111 0%, transparent 40%);
-    z-index: 1;
+    transform: scale(1.05);
 }
 
 .status-badge {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(78, 205, 196, 0.9);
-    backdrop-filter: blur(5px);
-    color: #000;
-    padding: 6px 14px;
-    border-radius: 12px;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 100px;
     font-size: 11px;
-    font-weight: 800;
-    z-index: 2;
+    font-weight: 700;
+    z-index: 10;
 }
 
+/* Content Styling */
+.v26-card-content { padding: 30px; }
 
-.v26-card-content { padding: 25px; position: relative; z-index: 2; }
-
-.card-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .category-tag {
     font-size: 10px;
-    color: #8e2de2;
+    color: #a78bfa;
     font-weight: 800;
     text-transform: uppercase;
-    background: rgba(142, 45, 226, 0.1);
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 6px 14px;
+    border-radius: 100px;
 }
-.date-tag { font-size: 10px; color: #52525b; font-weight: 600; }
 
-.v26-card-content h3 { font-size: 20px; margin-bottom: 25px; color: #fff; font-weight: 700; line-height: 1.4; }
-
+.v26-card-content h3 {
+    font-size: 22px;
+    margin: 20px 0 30px;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
 
 .v26-restore-btn {
     width: 100%;
-    padding: 14px;
-    background: #18181b;
-    border: 1px solid #27272a;
-    color: #fff;
-    border-radius: 16px;
+    padding: 16px;
+    background: #111;
+    border: 1px solid #1f1f1f;
+    color: #efefef;
+    border-radius: 20px;
     cursor: pointer;
     transition: 0.3s;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .v26-restore-btn:hover {
     background: #fff;
     color: #000;
     border-color: #fff;
-    transform: scale(1.02);
 }
-
-.btn-icon { transition: transform 0.3s ease; }
-.v26-restore-btn:hover .btn-icon { transform: rotate(-180deg); }
-
 
 .v26-empty-state {
     text-align: center;
-    margin-top: 80px;
-    padding: 60px;
-    background: #09090b;
-    border-radius: 40px;
-    border: 1px dashed #27272a;
+    padding: 100px 20px;
+    color: #71717a;
 }
-.empty-icon { font-size: 60px; margin-bottom: 20px; opacity: 0.5; }
-.v26-empty-state p { font-size: 20px; color: #fff; font-weight: 600; }
-.v26-empty-state small { color: #52525b; display: block; margin-top: 10px; }
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
 
 @media (max-width: 768px) {
     .v26-grid { grid-template-columns: 1fr; }
-    .v26-archive-header { text-align: center; }
+    .v26-archive-container { padding: 20px; }
 }
 </style>
