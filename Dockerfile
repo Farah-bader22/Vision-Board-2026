@@ -19,7 +19,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # 3. Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 4. Install Node.js (ضروري جداً عشان التنسيق و Vite)
+# 4. Install Node.js
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
 
@@ -32,13 +32,14 @@ COPY . /var/www
 # 7. Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 8. Install NPM dependencies & Build Assets (تم التعديل هنا لحل التعارض)
+# 8. Install NPM dependencies & Build Assets
 RUN npm install --legacy-peer-deps && npm run build
 
-# 9. الصلاحيات لملفات التخزين والقاعدة
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# 9. تهيئة ملف القاعدة والصلاحيات (عشان الـ 500 Error تروح)
+RUN mkdir -p database && touch database/database.sqlite
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache /var/www/database
+RUN chmod -R 777 /var/www/storage /var/www/bootstrap/cache /var/www/database
 
-# 10. تشغيل السيرفر مع ربط التخزين (حل مشكلة السواد)
+# 10. تشغيل الهجرة (Migrate) وربط التخزين والسيرفر
 EXPOSE 80
-CMD php artisan storage:link && php artisan serve --host=0.0.0.0 --port=80
+CMD php artisan migrate --force && php artisan storage:link && php artisan serve --host=0.0.0.0 --port=80
