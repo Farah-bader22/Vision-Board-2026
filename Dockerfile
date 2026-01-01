@@ -32,8 +32,8 @@ COPY . /var/www
 # 7. Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# 8. Install NPM dependencies & Build Assets (حل مشكلة التنسيق)
-RUN npm install && npm run build
+# 8. Install NPM dependencies & Build Assets (تم التعديل هنا لحل التعارض)
+RUN npm install --legacy-peer-deps && npm run build
 
 # 9. الصلاحيات لملفات التخزين والقاعدة
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
