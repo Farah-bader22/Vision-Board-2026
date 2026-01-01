@@ -10,7 +10,6 @@ const props = defineProps({
 // وظيفة لضمان الحصول على رابط الصورة الكامل لحل مشكلة السواد في الرندر
 const getImageUrl = (path) => {
     if (!path) return '';
-    // نستخدم window.location.origin للتأكد من أن الرابط يبدأ بـ http/https
     return `${window.location.origin}/storage/${path}`;
 };
 
@@ -90,8 +89,15 @@ const unarchive = (id) => {
 </template>
 
 <style scoped>
-.v26-archive-container { padding: 40px 20px; max-width: 1200px; margin: 0 auto; }
-.v26-archive-header { margin-bottom: 50px; }
+/* الحاوية الرئيسية مع هوامش مرنة لمنع الالتصاق بالحواف */
+.v26-archive-container {
+    padding: clamp(20px, 5vw, 40px) 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-x: hidden;
+}
+
+.v26-archive-header { margin-bottom: clamp(30px, 8vw, 50px); }
 
 .v26-label {
     background: linear-gradient(90deg, #8e2de2, #4ecdc4);
@@ -103,18 +109,25 @@ const unarchive = (id) => {
     letter-spacing: 3px;
 }
 
-.v26-archive-header h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; color: #fff; letter-spacing: -2px; margin: 10px 0; }
+/* العنوان يتصاغر بذكاء على الموبايل */
+.v26-archive-header h1 {
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -2px;
+    margin: 10px 0;
+}
 .v26-archive-header h1 span { color: #8e2de2; }
-.v26-archive-header p { color: #71717a; font-size: 1.1rem; }
+.v26-archive-header p { color: #71717a; font-size: clamp(0.9rem, 2vw, 1.1rem); }
 
-/* Grid System */
+/* نظام الشبكة المحمي: يمنع خروج الكروت عن الشاشة في الموبايلات الصغيرة */
 .v26-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 35px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
+    gap: clamp(20px, 4vw, 35px);
 }
 
-/* Card Styling */
+/* تصميم الكرت مع ارتفاع مرن */
 .v26-card {
     background: #0a0a0a;
     border: 1px solid rgba(255, 255, 255, 0.03);
@@ -122,6 +135,8 @@ const unarchive = (id) => {
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
+    display: flex;
+    flex-direction: column; /* يضمن توزيع المحتوى عمودياً */
 }
 
 .v26-card:hover {
@@ -158,7 +173,7 @@ const unarchive = (id) => {
     max-height: 100%;
     object-fit: contain;
     transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    display: block; /* يمنع الفراغات الصغيرة أسفل الصورة */
+    display: block;
 }
 
 .v26-card:hover .v26-full-img {
@@ -167,8 +182,8 @@ const unarchive = (id) => {
 
 .status-badge {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: clamp(12px, 3vw, 20px);
+    left: clamp(12px, 3vw, 20px);
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -180,8 +195,13 @@ const unarchive = (id) => {
     z-index: 10;
 }
 
-/* Content Styling */
-.v26-card-content { padding: 30px; }
+/* محتوى الكرت مع جعل الزر دائماً في الأسفل */
+.v26-card-content {
+    padding: clamp(20px, 4vw, 30px);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
 
 .category-tag {
     font-size: 10px;
@@ -191,11 +211,12 @@ const unarchive = (id) => {
     background: rgba(139, 92, 246, 0.1);
     padding: 6px 14px;
     border-radius: 100px;
+    width: fit-content;
 }
 
 .v26-card-content h3 {
-    font-size: 22px;
-    margin: 20px 0 30px;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    margin: 20px 0 clamp(15px, 4vw, 30px);
     color: #fff;
     font-weight: 700;
     letter-spacing: -0.5px;
@@ -215,6 +236,7 @@ const unarchive = (id) => {
     align-items: center;
     justify-content: center;
     gap: 12px;
+    margin-top: auto; /* دفع الزر للأسفل مهما كان طول العنوان */
 }
 
 .v26-restore-btn:hover {
@@ -225,17 +247,22 @@ const unarchive = (id) => {
 
 .v26-empty-state {
     text-align: center;
-    padding: 100px 20px;
+    padding: clamp(60px, 15vw, 100px) 20px;
     color: #71717a;
 }
 
 .empty-icon {
-    font-size: 4rem;
+    font-size: clamp(3rem, 10vw, 4rem);
     margin-bottom: 20px;
 }
 
+/* تعديلات التابلت والموبايل */
 @media (max-width: 768px) {
-    .v26-grid { grid-template-columns: 1fr; }
-    .v26-archive-container { padding: 20px; }
+    .v26-grid { gap: 20px; }
+}
+
+@media (max-width: 480px) {
+    .v26-card { border-radius: 24px; }
+    .v26-card-content { padding: 20px; }
 }
 </style>

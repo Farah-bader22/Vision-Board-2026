@@ -118,7 +118,9 @@ const exportReport = async () => {
                         <span class="label">Efficiency Rate</span>
                         <div class="val-group">
                             <span class="num">{{ avgProgress }}%</span>
-                            <div class="bar-bg"><div class="bar-fill" :style="{ width: avgProgress + '%' }"></div></div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" :style="{ width: avgProgress + '%' }"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -138,12 +140,12 @@ const exportReport = async () => {
                     <div class="analysis-card insight-side">
                         <div class="card-info">
                             <h3>Performance Insight</h3>
-                            <div class="insight-pill">
+                            <div class="insight-pill" v-if="categories && categories.length">
                                 Primary focus detected in <span>{{ categories[0] }}</span>
                             </div>
                         </div>
                         <div class="insight-details">
-                            <p class="desc">
+                            <p class="desc" v-if="totalGoals > 0">
                                 Your strategy is currently leaning <strong>{{ Math.round((counts[0]/totalGoals)*100) }}%</strong> towards this sector.
                                 System suggests maintaining this momentum.
                             </p>
@@ -167,20 +169,23 @@ const exportReport = async () => {
 </template>
 
 <style scoped>
+/* Main Page Container */
 .v26-stats-page {
-    padding: 60px 24px;
+    padding: clamp(30px, 5vw, 60px) 16px;
     max-width: 1000px;
     margin: 0 auto;
     color: #ffffff;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* 1. Header: ضبط المسافات والمحاذاة لتشبه فرح بورد */
+/* Header Section */
 .v26-top-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .system-tag {
@@ -192,7 +197,7 @@ const exportReport = async () => {
 }
 
 .v26-top-bar h1 {
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 5vw, 1.8rem);
     font-weight: 800;
     margin-top: 5px;
     letter-spacing: -1.2px;
@@ -204,20 +209,21 @@ const exportReport = async () => {
     background: #ffffff;
     color: #000;
     padding: 12px 28px;
-    border-radius: 100px; /* جعل الزر بيضاوي تماماً مثل زر Create Vision */
+    border-radius: 100px;
     font-weight: 700;
     font-size: 14px;
     border: none;
     cursor: pointer;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: 0.3s ease;
+    white-space: nowrap;
 }
 
-/* 2. Report Canvas: الحاوية الكبرى */
+/* Report Canvas */
 .v26-report-wrapper {
-    background: #000000; /* خلفية سوداء صريحة لتعميق التباين */
+    background: #000000;
     border: 1px solid #111;
-    border-radius: 32px;
-    padding: 40px;
+    border-radius: clamp(20px, 4vw, 32px);
+    padding: clamp(20px, 5vw, 40px);
 }
 
 .report-header-meta {
@@ -227,28 +233,14 @@ const exportReport = async () => {
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-.brand-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 800;
-    font-size: 12px;
-    letter-spacing: 2px;
-}
-
-.brand-box .dot {
-    width: 6px;
-    height: 6px;
-    background: #8b5cf6;
-    border-radius: 1px; /* جعل النقطة مربعة قليلاً لتعطي طابع هندسي */
-}
-
-/* 3. Metrics: توحيد الارتفاع والعرض */
+/* Metrics Grid - Responsive with Auto-fit */
 .v26-metrics-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 }
@@ -258,33 +250,14 @@ const exportReport = async () => {
     border: 1px solid #161616;
     padding: 30px;
     border-radius: 24px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
-.label {
-    font-size: 11px;
-    color: #444;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
+.num { font-size: clamp(2rem, 5vw, 2.4rem); font-weight: 800; }
 
-.val-group {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-top: 10px;
-}
-
-.num { font-size: 2.4rem; font-weight: 800; color: #fff; }
-.unit { font-size: 12px; color: #333; font-weight: 700; }
-
-/* 4. Analysis Section: الحل النهائي لمشكلة التناسق */
+/* Analysis Cards */
 .v26-analysis-section {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
 }
 
@@ -292,16 +265,18 @@ const exportReport = async () => {
     background: #0a0a0a;
     border: 1px solid #161616;
     border-radius: 24px;
-    padding: 35px; /* مساحة داخلية أوسع لراحة العين */
+    padding: clamp(20px, 5vw, 35px);
     display: flex;
     flex-direction: column;
+    min-height: 400px;
 }
 
-/* تنسيق الشارت: وضعه داخل حاوية مربعة تماماً لتوسيطه */
+/* Chart Container */
 .chart-box {
-    width: 200px; /* حجم ثابت للتحكم الكامل */
-    height: 200px;
-    margin: 40px auto; /* توسيط أفقي وعمودي */
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1/1;
+    margin: auto;
     position: relative;
     display: flex;
     align-items: center;
@@ -310,42 +285,25 @@ const exportReport = async () => {
 
 .chart-center {
     position: absolute;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
-}
-
-/* تنسيق الـ Insights ليكون موازياً لمركز الشارت */
-.insight-side {
-    justify-content: space-between;
-}
-
-.card-info h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
 }
 
 .insight-pill {
     background: rgba(139, 92, 246, 0.08);
     color: #8b5cf6;
     padding: 10px 18px;
-    border-radius: 100px; /* توحيد مع الأزرار */
+    border-radius: 100px;
     font-size: 12px;
     font-weight: 700;
     margin: 15px 0;
     width: fit-content;
 }
 
-.desc {
-    font-size: 14px;
-    line-height: 1.8;
-    color: #71717a; /* رمادي خفيف لتقليل الزحمة البصرية */
-}
-
-.desc strong { color: #fff; }
+.desc { font-size: 14px; line-height: 1.8; color: #71717a; }
 
 .quote-minimal {
-    margin-top: 30px;
+    margin-top: auto;
     padding: 20px;
     background: rgba(255,255,255,0.02);
     border-radius: 20px;
@@ -355,43 +313,35 @@ const exportReport = async () => {
     border-left: 3px solid #8b5cf6;
 }
 
-/* 5. Footer: التذييل الهادئ */
+/* Footer */
 .report-footer {
     margin-top: 25px;
     display: flex;
     justify-content: space-between;
-    padding: 20px 10px 0;
-    font-size: 10px;
-    font-weight: 700;
-    color: #222;
-    border-top: 1px solid rgba(255,255,255,0.02);
-}
-
-.status-indicator {
-    display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 10px;
+    color: #222;
 }
 
 .pulse {
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     background: #10b981;
     border-radius: 50%;
+    display: inline-block;
     animation: simple-pulse 2s infinite;
 }
 
 @keyframes simple-pulse {
-    0% { opacity: 1; }
+    0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
-    100% { opacity: 1; }
 }
 
-/* Mobile Adjustments */
-@media (max-width: 768px) {
-    .v26-metrics-grid, .v26-analysis-section { grid-template-columns: 1fr; }
-    .analysis-card { padding: 30px; text-align: center; }
-    .insight-pill { margin: 15px auto; }
-    .chart-box { margin: 30px auto; }
+/* Mobile Specific Tweaks */
+@media (max-width: 480px) {
+    .v26-top-bar { flex-direction: column; align-items: flex-start; }
+    .v26-export-btn { width: 100%; text-align: center; }
+    .v26-analysis-section { grid-template-columns: 1fr; }
 }
 </style>
